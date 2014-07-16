@@ -1,35 +1,219 @@
 package young.exercise.info;
 
+
+import java.net.Socket;
+
+import android.R.integer;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ListActivity;
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ListActivity {
+
+	private SimpleCursorAdapter mAdapter = null;
+	private Cursor mCursor = null;
+	private ContentResolver mContentResolver = null;
+	private ContentValues mValues = new ContentValues();
+	protected String newNumber;
+	protected String newNumberId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		System.out.println("!!!");
+		
+		getListView().setFooterDividersEnabled(true);
+		LayoutInflater inflater = getLayoutInflater();		
+		TextView footerView = (TextView)inflater.inflate(R.layout.footer_view, null);
+		
+		mContentResolver = getContentResolver();  
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction("change_number");
+		registerReceiver(mBroadcastReceiver, intentFilter);
+
+		getListView().addFooterView(footerView);
+		footerView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				initData();
+				initAdapter();
+			}
+		});
+		
+		getListView().setAdapter(mAdapter);
+		getListView().setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				
+				showInfoDialog(position);
+			}
+
+		});
+		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		unregisterReceiver(mBroadcastReceiver);
 	}
 
+	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+	protected void onStop(){
+		super.onStop();
+		
 	}
+	
+	
+	// broadcast receiver
+	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+			newNumber = intent.getStringExtra("new_number");
+			newNumberId = intent.getStringExtra("new_number_id");
+			updateContentProvider(newNumberId,newNumber);
+			mAdapter.notifyDataSetChanged();
 		}
-		return super.onOptionsItemSelected(item);
+	};
+
+	
+	// all the methods
+	
+	
+	private void showInfoDialog(final int pos) {
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage("对该项进行编辑。").setTitle("编辑").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+				deleteInContentProvider(pos);
+				
+				mAdapter.notifyDataSetChanged();
+
+				dialog.dismiss();
+				
+			}
+
+		}).setNegativeButton("个人详情", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+				setProile(pos);
+				dialog.dismiss();
+				
+			}
+
+			
+		}).create().show();
 	}
+	
+	
+
+	protected void updateContentProvider(String newNumberId, String newNumber) {
+		
+		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, newNumberId + "");
+		mCursor = mContentResolver.query(uri, null, Profile.ID + "=" + newNumberId, null, null);
+		if(mCursor.moveToFirst()){
+			ContentValues updateValues = new ContentValues();
+			updateValues.put(Profile.NUMBER, newNumber);
+			Uri updateUri = ContentUris.withAppendedId(Profile.CONTENT_URI, Long.parseLong(newNumberId));
+			getContentResolver().update(updateUri, updateValues, null, null);
+		}
+		
+	}
+
+	private void setProile(int pos) {
+		
+		Intent setDetailIntent = new Intent(MainActivity.this,
+				PersonalDetail.class);
+		int id = (int) mAdapter.getItemId(pos);
+		String name = null;
+		String sex = null;
+		String age = null;
+		String number = null;
+		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, id + "");
+		mCursor = mContentResolver.query(uri, null, null, null, null);
+
+		if (mCursor.moveToFirst()) {
+			name = mCursor.getString(mCursor.getColumnIndex(Profile.NAME));
+			sex = mCursor.getString(mCursor.getColumnIndex(Profile.SEX));
+			age = mCursor.getString(mCursor.getColumnIndex(Profile.AGE));
+			number = mCursor.getString(mCursor.getColumnIndex(Profile.NUMBER));
+		}
+		startManagingCursor(mCursor);
+
+		setDetailIntent.putExtra("id", id);
+		setDetailIntent.putExtra("name", name);
+		setDetailIntent.putExtra("sex", sex);
+		setDetailIntent.putExtra("age", age);
+		setDetailIntent.putExtra("number", number);
+
+		startActivity(setDetailIntent);
+	}
+	
+	private void deleteInContentProvider(int pos) {
+		
+		long delId = mAdapter.getItemId(pos);
+		getContentResolver().delete(Profile.CONTENT_URI, "_id=" + delId, null);
+
+	} 
+	
+	private void initAdapter() {
+		
+		mCursor = mContentResolver.query(Profile.CONTENT_URI, new String[]{Profile.ID,Profile.NAME,Profile.NUMBER}, null, null, null);
+		
+		startManagingCursor(mCursor);
+		mAdapter = new SimpleCursorAdapter(this, R.layout.list_item, mCursor, new String[]{Profile.ID, Profile.NAME, Profile.NUMBER}, new int[]{R.id.profile_id, R.id.profile_name, R.id.profile_number});
+		
+		
+		setListAdapter(mAdapter);
+	}
+
+	
+	private void initData() {
+
+		for (int i = 0; i < 10; i++) {
+
+			mValues.put(Profile.ID, 10001 + i);
+			mValues.put(Profile.NAME, 1 + i + "号同学");
+			mValues.put(Profile.SEX, "man");
+			mValues.put(Profile.AGE, 21 + i);
+			mValues.put(Profile.NUMBER, 133800100 + i);
+			mValues.put(Profile.INTRODUCTION, "me");
+			mContentResolver.insert(Profile.CONTENT_URI, mValues);
+		}
+	}
+	
+	
 }

@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="15"
+        android:minSdkVersion="8"
         android:targetSdkVersion="15" />
 
     <application
@@ -22,6 +22,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".PersonalDetail" />
+
+        <provider
+            android:name="MyProvider"
+            android:authorities="young.exercise.provider" >
+        </provider>
+
+        <service android:name=".MusicPlayerService" >
+            <intent-filter>
+                <action android:name="android.intent.action.MUSIC" />
+            </intent-filter>
+        </service>
+
     </application>
+    
+    
 
 </manifest>
