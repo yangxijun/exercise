@@ -111,7 +111,7 @@ public class MainActivity extends ListActivity {
 	private void showInfoDialog(final int pos) {
 		
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("对该项进行编辑。").setTitle("编辑").setPositiveButton("删除", new DialogInterface.OnClickListener() {
+		builder.setMessage("瀵硅椤硅繘琛岀紪杈戙�").setTitle("缂栬緫").setPositiveButton("鍒犻櫎", new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -124,7 +124,7 @@ public class MainActivity extends ListActivity {
 				
 			}
 
-		}).setNegativeButton("个人详情", new DialogInterface.OnClickListener() {
+		}).setNegativeButton("涓汉璇︽儏", new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -206,7 +206,7 @@ public class MainActivity extends ListActivity {
 		for (int i = 0; i < 10; i++) {
 
 			mValues.put(Profile.ID, 10001 + i);
-			mValues.put(Profile.NAME, 1 + i + "号同学");
+			mValues.put(Profile.NAME, "NO." + 1 + i);
 			mValues.put(Profile.SEX, "man");
 			mValues.put(Profile.AGE, 21 + i);
 			mValues.put(Profile.NUMBER, 133800100 + i);
