@@ -127,6 +127,7 @@
             android:layout_height="wrap_content"
             android:textOff="播放"
             android:textOn="播放中" />
+        
     </LinearLayout>
 
 </LinearLayout>

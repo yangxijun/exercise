@@ -3,7 +3,6 @@ package young.exercise.info;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -79,7 +78,7 @@ public class PersonalDetail extends Activity{
 	private void sendNewNumber(String changedId, String newNumber) {
 		
 		Intent intent = new Intent();
-		intent.setAction("com.jiubang.go.launcherex.action.changeNumber");
+		intent.setAction("com.exercise.info.change_number");
 		intent.putExtra("new_number_id", changedId);
 		intent.putExtra("new_number", newNumber);
 		sendBroadcast(intent);

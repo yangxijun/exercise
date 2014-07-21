@@ -1,6 +1,5 @@
 package young.exercise.info;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -12,7 +11,7 @@ public class DBHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 1;
 
 	public DBHelper(Context context) {
-		super(context, Profile.TABLE_NAME, null, Profile.VERSION);
+		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
 	@Override
@@ -25,18 +24,6 @@ public class DBHelper extends SQLiteOpenHelper {
 				+ " TEST NOT NULL);");
 	}
 
-	public void add(String name, String sex, int age, String number,
-			String introduction) {
-
-		SQLiteDatabase db = getWritableDatabase();
-		ContentValues values = new ContentValues();
-		values.put(Profile.NAME, name);
-		values.put(Profile.SEX, sex);
-		values.put(Profile.AGE, age);
-		values.put(Profile.NUMBER, number);
-		values.put(Profile.INTRODUCTION, introduction);
-
-	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

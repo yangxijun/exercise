@@ -1,10 +1,5 @@
 package young.exercise.info;
 
-
-import java.net.Socket;
-
-import android.R.integer;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
@@ -17,13 +12,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -33,24 +24,25 @@ import android.widget.TextView;
 public class MainActivity extends ListActivity {
 
 	private SimpleCursorAdapter mAdapter = null;
-	private Cursor mCursor = null;
 	private ContentResolver mContentResolver = null;
 	private ContentValues mValues = new ContentValues();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		getListView().setFooterDividersEnabled(true);
-		LayoutInflater inflater = getLayoutInflater();		
-		TextView footerView = (TextView)inflater.inflate(R.layout.footer_view, null);
+
+		LayoutInflater inflater = getLayoutInflater();
+		final TextView footerView = (TextView) inflater.inflate(R.layout.footer_view,
+				null);
 		getListView().addFooterView(footerView);
 		footerView.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				initData();
 				initAdapter();
+				setListAdapter(mAdapter);
+				footerView.setVisibility(View.GONE);
 			}
 		});
 		getListView().setAdapter(mAdapter);
@@ -59,19 +51,19 @@ public class MainActivity extends ListActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				
+
 				showInfoDialog(position);
 			}
 
 		});
 
-		mContentResolver = getContentResolver();  
-		
+		mContentResolver = getContentResolver();
+
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction("change_number");
+		intentFilter.addAction("com.exercise.info.change_number");
 		registerReceiver(mBroadcastReceiver, intentFilter);
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -79,78 +71,79 @@ public class MainActivity extends ListActivity {
 		unregisterReceiver(mBroadcastReceiver);
 	}
 
-	
 	@Override
-	protected void onStop(){
+	protected void onStop() {
 		super.onStop();
-		
+
 	}
-	
-	
+
 	// broadcast receiver
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-		
+
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
 			String newNumber = intent.getStringExtra("new_number");
 			String newNumberId = intent.getStringExtra("new_number_id");
-			updateContentProvider(newNumberId,newNumber);
+			updateContentProvider(newNumberId, newNumber);
 			mAdapter.notifyDataSetChanged();
 		}
 	};
 
-	
 	// all the methods
-	
-	
+
 	private void showInfoDialog(final int pos) {
-		
+
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("瀵硅椤硅繘琛岀紪杈戙�").setTitle("缂栬緫").setPositiveButton("鍒犻櫎", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				
-				deleteInContentProvider(pos);
-				
-				mAdapter.notifyDataSetChanged();
+		builder.setMessage("员工信息")
+				.setTitle("修改")
+				.setPositiveButton("删除", new DialogInterface.OnClickListener() {
 
-				dialog.dismiss();
-				
-			}
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
 
-		}).setNegativeButton("涓汉璇︽儏", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				
-				setProile(pos);
-				dialog.dismiss();
-				
-			}
+						deleteInContentProvider(pos);
 
-			
-		}).create().show();
+						mAdapter.notifyDataSetChanged();
+
+						dialog.dismiss();
+
+					}
+
+				})
+				.setNegativeButton("个人详情",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+
+								setProile(pos);
+								dialog.dismiss();
+
+							}
+
+						}).create().show();
 	}
-	
-	
 
 	protected void updateContentProvider(String newNumberId, String newNumber) {
-		
+
 		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, newNumberId + "");
-		mCursor = mContentResolver.query(uri, null, Profile.ID + "=" + newNumberId, null, null);
-		if(mCursor.moveToFirst()){
+
+		Cursor mCursor = mContentResolver.query(uri, null, Profile.ID + "="
+				+ newNumberId, null, null);
+		if (mCursor.moveToFirst()) {
 			ContentValues updateValues = new ContentValues();
 			updateValues.put(Profile.NUMBER, newNumber);
-			Uri updateUri = ContentUris.withAppendedId(Profile.CONTENT_URI, Long.parseLong(newNumberId));
+			Uri updateUri = ContentUris.withAppendedId(Profile.CONTENT_URI,
+					Long.parseLong(newNumberId));
 			getContentResolver().update(updateUri, updateValues, null, null);
 		}
-		
+		mCursor.close();
 	}
 
 	private void setProile(int pos) {
-		
+
 		Intent setDetailIntent = new Intent(MainActivity.this,
 				PersonalDetail.class);
 		int id = (int) mAdapter.getItemId(pos);
@@ -159,7 +152,7 @@ public class MainActivity extends ListActivity {
 		String age = null;
 		String number = null;
 		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, id + "");
-		mCursor = mContentResolver.query(uri, null, null, null, null);
+		Cursor mCursor = mContentResolver.query(uri, null, null, null, null);
 
 		if (mCursor.moveToFirst()) {
 			name = mCursor.getString(mCursor.getColumnIndex(Profile.NAME));
@@ -167,7 +160,7 @@ public class MainActivity extends ListActivity {
 			age = mCursor.getString(mCursor.getColumnIndex(Profile.AGE));
 			number = mCursor.getString(mCursor.getColumnIndex(Profile.NUMBER));
 		}
-		startManagingCursor(mCursor);
+		mCursor.close();
 
 		setDetailIntent.putExtra("id", id);
 		setDetailIntent.putExtra("name", name);
@@ -177,39 +170,41 @@ public class MainActivity extends ListActivity {
 
 		startActivity(setDetailIntent);
 	}
-	
+
 	private void deleteInContentProvider(int pos) {
-		
+
 		long delId = mAdapter.getItemId(pos);
 		getContentResolver().delete(Profile.CONTENT_URI, "_id=" + delId, null);
 
-	} 
-	
-	private void initAdapter() {
-		
-		mCursor = mContentResolver.query(Profile.CONTENT_URI, new String[]{Profile.ID,Profile.NAME,Profile.NUMBER}, null, null, null);
-		
-		startManagingCursor(mCursor);
-		mAdapter = new SimpleCursorAdapter(this, R.layout.list_item, mCursor, new String[]{Profile.ID, Profile.NAME, Profile.NUMBER}, new int[]{R.id.profile_id, R.id.profile_name, R.id.profile_number});
-		
-		
-		setListAdapter(mAdapter);
 	}
 
-	
+	private void initAdapter() {
+
+		Cursor mCursor = mContentResolver.query(Profile.CONTENT_URI,
+				new String[] { Profile.ID, Profile.NAME, Profile.NUMBER },
+				null, null, null);
+
+		startManagingCursor(mCursor);
+		mAdapter = new SimpleCursorAdapter(this, R.layout.list_item, mCursor,
+				new String[] { Profile.ID, Profile.NAME, Profile.NUMBER },
+				new int[] { R.id.profile_id, R.id.profile_name,
+						R.id.profile_number }, 1);
+
+		
+	}
+
 	private void initData() {
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 1; i < 11; i++) {
 
-			mValues.put(Profile.ID, 10001 + i);
-			mValues.put(Profile.NAME, "NO." + 1 + i);
+			mValues.put(Profile.ID, 10000 + i);
+			mValues.put(Profile.NAME, "NO." + i);
 			mValues.put(Profile.SEX, "man");
-			mValues.put(Profile.AGE, 21 + i);
-			mValues.put(Profile.NUMBER, 133800100 + i);
+			mValues.put(Profile.AGE, 20 + i);
+			mValues.put(Profile.NUMBER, 13380010 + i);
 			mValues.put(Profile.INTRODUCTION, "me");
 			mContentResolver.insert(Profile.CONTENT_URI, mValues);
 		}
 	}
-	
-	
+
 }

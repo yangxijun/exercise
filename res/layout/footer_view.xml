@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
-    android:text="添加信息"
+    android:text="添加信息/显示信息"
     android:textSize="24sp" >
 
 </TextView>
