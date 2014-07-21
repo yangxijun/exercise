@@ -79,7 +79,7 @@ public class PersonalDetail extends Activity{
 	private void sendNewNumber(String changedId, String newNumber) {
 		
 		Intent intent = new Intent();
-		intent.setAction("change_number");
+		intent.setAction("com.jiubang.go.launcherex.action.changeNumber");
 		intent.putExtra("new_number_id", changedId);
 		intent.putExtra("new_number", newNumber);
 		sendBroadcast(intent);

@@ -36,8 +36,6 @@ public class MainActivity extends ListActivity {
 	private Cursor mCursor = null;
 	private ContentResolver mContentResolver = null;
 	private ContentValues mValues = new ContentValues();
-	protected String newNumber;
-	protected String newNumberId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +44,6 @@ public class MainActivity extends ListActivity {
 		getListView().setFooterDividersEnabled(true);
 		LayoutInflater inflater = getLayoutInflater();		
 		TextView footerView = (TextView)inflater.inflate(R.layout.footer_view, null);
-		
-		mContentResolver = getContentResolver();  
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction("change_number");
-		registerReceiver(mBroadcastReceiver, intentFilter);
-
 		getListView().addFooterView(footerView);
 		footerView.setOnClickListener(new OnClickListener() {
 			
@@ -61,7 +53,6 @@ public class MainActivity extends ListActivity {
 				initAdapter();
 			}
 		});
-		
 		getListView().setAdapter(mAdapter);
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 
@@ -73,7 +64,12 @@ public class MainActivity extends ListActivity {
 			}
 
 		});
+
+		mContentResolver = getContentResolver();  
 		
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction("change_number");
+		registerReceiver(mBroadcastReceiver, intentFilter);
 	}
 	
 	@Override
@@ -97,8 +93,8 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			newNumber = intent.getStringExtra("new_number");
-			newNumberId = intent.getStringExtra("new_number_id");
+			String newNumber = intent.getStringExtra("new_number");
+			String newNumberId = intent.getStringExtra("new_number_id");
 			updateContentProvider(newNumberId,newNumber);
 			mAdapter.notifyDataSetChanged();
 		}
