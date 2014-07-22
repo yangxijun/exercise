@@ -64,11 +64,13 @@ public class PersonalDetail extends Activity{
 		mIntroduction.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				Intent intent = new Intent("android.intent.action.INTRO_MUSIC");
 				if (isChecked) {
-					startService(new Intent("android.intent.action.MUSIC"));
+					intent.putExtra("com.exercise.info.intro1", R.raw.introduction);
+					startService(intent);
 					isChecked = !isChecked;
 				}else {
-					stopService(new Intent("android.intent.action.MUSIC"));
+					stopService(intent);
 				}
 			}
 		});

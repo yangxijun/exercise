@@ -9,6 +9,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -28,7 +29,12 @@ public class MyProvider extends ContentProvider{
 	public boolean onCreate() {
 		
 		mDbHelper = new DBHelper(this.getContext());    
-		mDb = mDbHelper.getReadableDatabase();    
+		try {
+			mDb = mDbHelper.getReadableDatabase();    
+		} catch (SQLiteException e) {
+			e.printStackTrace();
+		}
+		
     
         return true; 
 	}
@@ -89,7 +95,12 @@ public class MyProvider extends ContentProvider{
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 
-		mDb = mDbHelper.getWritableDatabase();
+		try {
+			mDb = mDbHelper.getWritableDatabase();
+		} catch (SQLiteException e) {
+			e.printStackTrace();
+		}
+		
 		int count;
 		switch (sUriMatcher.match(uri)) {
 		case Profile.ITEM:
@@ -110,7 +121,12 @@ public class MyProvider extends ContentProvider{
 
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-		mDb = mDbHelper.getWritableDatabase();
+		try {
+			mDb = mDbHelper.getWritableDatabase();
+		} catch (SQLiteException e) {
+			e.printStackTrace();
+		}
+		
 		int count = 0;
 		switch (sUriMatcher.match(uri)) {
 		case Profile.ITEM:

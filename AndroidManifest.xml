@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="8" />
 
     <application
         android:allowBackup="true"
@@ -31,7 +31,7 @@
 
         <service android:name=".MusicPlayerService" >
             <intent-filter>
-                <action android:name="android.intent.action.MUSIC" />
+                <action android:name="android.intent.action.INTRO_MUSIC" />
             </intent-filter>
         </service>
 

@@ -32,9 +32,20 @@ public class MainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		LayoutInflater inflater = getLayoutInflater();
-		final TextView footerView = (TextView) inflater.inflate(R.layout.footer_view,
-				null);
-		getListView().addFooterView(footerView);
+		final TextView footerView = (TextView) inflater.inflate(
+				R.layout.footer_view, null);
+
+		mContentResolver = getContentResolver();
+
+		if (isExisted()) {
+			initAdapter();
+			setListAdapter(mAdapter);
+			footerView.setVisibility(View.GONE);
+		} else {
+			getListView().addFooterView(footerView);
+			getListView().setAdapter(mAdapter);
+
+		}
 		footerView.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -45,7 +56,6 @@ public class MainActivity extends ListActivity {
 				footerView.setVisibility(View.GONE);
 			}
 		});
-		getListView().setAdapter(mAdapter);
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -56,8 +66,6 @@ public class MainActivity extends ListActivity {
 			}
 
 		});
-
-		mContentResolver = getContentResolver();
 
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction("com.exercise.info.change_number");
@@ -77,7 +85,6 @@ public class MainActivity extends ListActivity {
 
 	}
 
-	// broadcast receiver
 	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -90,7 +97,13 @@ public class MainActivity extends ListActivity {
 		}
 	};
 
-	// all the methods
+	private boolean isExisted() {
+		Cursor cursor = mContentResolver.query(Profile.CONTENT_URI, null, null,
+				null, null);
+		boolean judge = (cursor.getCount() == 0);
+		cursor.close();
+		return !judge;
+	}
 
 	private void showInfoDialog(final int pos) {
 
@@ -190,19 +203,19 @@ public class MainActivity extends ListActivity {
 				new int[] { R.id.profile_id, R.id.profile_name,
 						R.id.profile_number }, 1);
 
-		
 	}
 
 	private void initData() {
 
-		for (int i = 1; i < 11; i++) {
+		int dataNum = 10;
+		for (int i = 1; i <= dataNum; i++) {
 
 			mValues.put(Profile.ID, 10000 + i);
 			mValues.put(Profile.NAME, "NO." + i);
 			mValues.put(Profile.SEX, "man");
 			mValues.put(Profile.AGE, 20 + i);
 			mValues.put(Profile.NUMBER, 13380010 + i);
-			mValues.put(Profile.INTRODUCTION, "me");
+
 			mContentResolver.insert(Profile.CONTENT_URI, mValues);
 		}
 	}
