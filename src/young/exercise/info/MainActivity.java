@@ -25,7 +25,6 @@ public class MainActivity extends ListActivity {
 
 	private SimpleCursorAdapter mAdapter = null;
 	private ContentResolver mContentResolver = null;
-	private ContentValues mValues = new ContentValues();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -207,6 +206,7 @@ public class MainActivity extends ListActivity {
 
 	private void initData() {
 
+		ContentValues mValues = new ContentValues();
 		int dataNum = 10;
 		for (int i = 1; i <= dataNum; i++) {
 
