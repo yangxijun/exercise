@@ -1,5 +1,6 @@
 package young.exercise.info;
 
+import android.R.integer;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
@@ -36,36 +38,37 @@ public class MainActivity extends ListActivity {
 
 		mContentResolver = getContentResolver();
 
-		if (isExisted()) {
+		// 判断数据库里面是否存有数据
+		if (dataExisted()) {
 			initAdapter();
 			setListAdapter(mAdapter);
 			footerView.setVisibility(View.GONE);
 		} else {
 			getListView().addFooterView(footerView);
 			getListView().setAdapter(mAdapter);
-
 		}
 		footerView.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				initData();
+				new initDataTask().execute(0);
 				initAdapter();
 				setListAdapter(mAdapter);
 				footerView.setVisibility(View.GONE);
 			}
 		});
+
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-
 				showInfoDialog(position);
 			}
 
 		});
 
+		// 接收广播
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction("com.exercise.info.change_number");
 		registerReceiver(mBroadcastReceiver, intentFilter);
@@ -96,11 +99,21 @@ public class MainActivity extends ListActivity {
 		}
 	};
 
-	private boolean isExisted() {
+	private boolean dataExisted() {
 		Cursor cursor = mContentResolver.query(Profile.CONTENT_URI, null, null,
 				null, null);
-		boolean judge = (cursor.getCount() == 0);
-		cursor.close();
+		
+		boolean judge = false;
+		try {
+			if (null != cursor) {
+				judge = (cursor.getCount() == 0);
+			}
+		} catch (Exception e) {
+		} finally {
+			if (null != cursor) {
+				cursor.close();
+			}
+		}
 		return !judge;
 	}
 
@@ -142,16 +155,23 @@ public class MainActivity extends ListActivity {
 
 		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, newNumberId + "");
 
-		Cursor mCursor = mContentResolver.query(uri, null, Profile.ID + "="
+		Cursor cursor = mContentResolver.query(uri, null, Profile.ID + "="
 				+ newNumberId, null, null);
-		if (mCursor.moveToFirst()) {
-			ContentValues updateValues = new ContentValues();
-			updateValues.put(Profile.NUMBER, newNumber);
-			Uri updateUri = ContentUris.withAppendedId(Profile.CONTENT_URI,
-					Long.parseLong(newNumberId));
-			getContentResolver().update(updateUri, updateValues, null, null);
+		try {
+			if (null != cursor && cursor.moveToFirst()) {
+				ContentValues updateValues = new ContentValues();
+				updateValues.put(Profile.NUMBER, newNumber);
+				Uri updateUri = ContentUris.withAppendedId(Profile.CONTENT_URI,
+						Long.parseLong(newNumberId));
+				getContentResolver()
+						.update(updateUri, updateValues, null, null);
+			}
+		} catch (Exception e) {
+		} finally {
+			if (null != cursor) {
+				cursor.close();
+			}
 		}
-		mCursor.close();
 	}
 
 	private void setProile(int pos) {
@@ -164,15 +184,22 @@ public class MainActivity extends ListActivity {
 		String age = null;
 		String number = null;
 		Uri uri = Uri.withAppendedPath(Profile.CONTENT_URI, id + "");
-		Cursor mCursor = mContentResolver.query(uri, null, null, null, null);
+		Cursor cursor = mContentResolver.query(uri, null, null, null, null);
+		try {
+			if (null != cursor && cursor.moveToFirst()) {
 
-		if (mCursor.moveToFirst()) {
-			name = mCursor.getString(mCursor.getColumnIndex(Profile.NAME));
-			sex = mCursor.getString(mCursor.getColumnIndex(Profile.SEX));
-			age = mCursor.getString(mCursor.getColumnIndex(Profile.AGE));
-			number = mCursor.getString(mCursor.getColumnIndex(Profile.NUMBER));
+				name = cursor.getString(cursor.getColumnIndex(Profile.NAME));
+				sex = cursor.getString(cursor.getColumnIndex(Profile.SEX));
+				age = cursor.getString(cursor.getColumnIndex(Profile.AGE));
+				number = cursor
+						.getString(cursor.getColumnIndex(Profile.NUMBER));
+			}
+		} catch (Exception e) {
+		} finally {
+			if (null != cursor) {
+				cursor.close();
+			}
 		}
-		mCursor.close();
 
 		setDetailIntent.putExtra("id", id);
 		setDetailIntent.putExtra("name", name);
@@ -200,7 +227,16 @@ public class MainActivity extends ListActivity {
 		mAdapter = new SimpleCursorAdapter(this, R.layout.list_item, mCursor,
 				new String[] { Profile.ID, Profile.NAME, Profile.NUMBER },
 				new int[] { R.id.profile_id, R.id.profile_name,
-						R.id.profile_number }, 1);
+						R.id.profile_number });
+	}
+
+	class initDataTask extends AsyncTask<Integer, Integer, String> {
+
+		@Override
+		protected String doInBackground(Integer... params) {
+			initData();
+			return null;
+		}
 
 	}
 
@@ -215,6 +251,7 @@ public class MainActivity extends ListActivity {
 			mValues.put(Profile.SEX, "man");
 			mValues.put(Profile.AGE, 20 + i);
 			mValues.put(Profile.NUMBER, 13380010 + i);
+			mValues.put(Profile.INTRODUCTION, "Hello");
 
 			mContentResolver.insert(Profile.CONTENT_URI, mValues);
 		}
