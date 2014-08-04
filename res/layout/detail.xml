@@ -99,6 +99,7 @@
             android:id="@+id/detail_new_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="phone"
             android:layout_weight="1"
             android:singleLine="true" />
 

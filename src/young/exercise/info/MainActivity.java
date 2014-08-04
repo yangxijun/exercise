@@ -1,6 +1,5 @@
 package young.exercise.info;
 
-import android.R.integer;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
@@ -24,7 +23,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
 
 public class MainActivity extends ListActivity {
-
+	
+	public static final String BROADCAST_CHANGE_NUMEBER= "com.exercise.info.broadcast.change_number";
+	public static final String INFO_ID= "com.exercise.info.id";
+	public static final String INFO_NAME= "com.exercise.info.name";
+	public static final String INFO_AGE= "com.exercise.info.age";
+	public static final String INFO_SEX= "com.exercise.info.sex";
+	public static final String INFO_NUMBER= "com.exercise.info.number";
 	private SimpleCursorAdapter mAdapter = null;
 	private ContentResolver mContentResolver = null;
 
@@ -51,7 +56,14 @@ public class MainActivity extends ListActivity {
 
 			@Override
 			public void onClick(View v) {
-				new initDataTask().execute(0);
+				new Thread(new Runnable() {
+					
+					@Override
+					public void run() {
+						initData();
+					}
+				});
+//				new initDataTask().execute();
 				initAdapter();
 				setListAdapter(mAdapter);
 				footerView.setVisibility(View.GONE);
@@ -70,7 +82,7 @@ public class MainActivity extends ListActivity {
 
 		// 接收广播
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction("com.exercise.info.change_number");
+		intentFilter.addAction(BROADCAST_CHANGE_NUMEBER);
 		registerReceiver(mBroadcastReceiver, intentFilter);
 	}
 
@@ -92,8 +104,8 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			String newNumber = intent.getStringExtra("new_number");
-			String newNumberId = intent.getStringExtra("new_number_id");
+			String newNumberId = intent.getStringExtra(PersonalDetail.NEW_NUMBER_ID);
+			String newNumber = intent.getStringExtra(PersonalDetail.NEW_NUMBER);
 			updateContentProvider(newNumberId, newNumber);
 			mAdapter.notifyDataSetChanged();
 		}
@@ -120,9 +132,9 @@ public class MainActivity extends ListActivity {
 	private void showInfoDialog(final int pos) {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("员工信息")
-				.setTitle("修改")
-				.setPositiveButton("删除", new DialogInterface.OnClickListener() {
+		builder.setMessage(R.string.dialog_info)
+				.setTitle(R.string.dialog_modify)
+				.setPositiveButton(R.string.dialog_delete, new DialogInterface.OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -136,7 +148,7 @@ public class MainActivity extends ListActivity {
 					}
 
 				})
-				.setNegativeButton("个人详情",
+				.setNegativeButton(R.string.dialog_detail,
 						new DialogInterface.OnClickListener() {
 
 							@Override
@@ -201,11 +213,11 @@ public class MainActivity extends ListActivity {
 			}
 		}
 
-		setDetailIntent.putExtra("id", id);
-		setDetailIntent.putExtra("name", name);
-		setDetailIntent.putExtra("sex", sex);
-		setDetailIntent.putExtra("age", age);
-		setDetailIntent.putExtra("number", number);
+		setDetailIntent.putExtra(INFO_ID, id);
+		setDetailIntent.putExtra(INFO_NAME, name);
+		setDetailIntent.putExtra(INFO_SEX, sex);
+		setDetailIntent.putExtra(INFO_AGE, age);
+		setDetailIntent.putExtra(INFO_NUMBER, number);
 
 		startActivity(setDetailIntent);
 	}
@@ -230,10 +242,10 @@ public class MainActivity extends ListActivity {
 						R.id.profile_number });
 	}
 
-	class initDataTask extends AsyncTask<Integer, Integer, String> {
+	class initDataTask extends AsyncTask<Void, Integer, String> {
 
 		@Override
-		protected String doInBackground(Integer... params) {
+		protected String doInBackground(Void... params) {
 			initData();
 			return null;
 		}
@@ -243,7 +255,7 @@ public class MainActivity extends ListActivity {
 	private void initData() {
 
 		ContentValues mValues = new ContentValues();
-		int dataNum = 10;
+		int dataNum = 30;
 		for (int i = 1; i <= dataNum; i++) {
 
 			mValues.put(Profile.ID, 10000 + i);

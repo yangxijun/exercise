@@ -14,7 +14,12 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class PersonalDetail extends Activity {
-
+	
+	public static final String NEW_NUMBER_ID = "new_number_id";
+	public static final String NEW_NUMBER = "new_number";
+	public static final String INTRO1 = "com.exercise.info.intro1";
+	
+	
 	private TextView mIdTextView;
 	private TextView mNameTextView;
 	private TextView mAgeTextView;
@@ -38,11 +43,11 @@ public class PersonalDetail extends Activity {
 		mSubmitButton = (Button) findViewById(R.id.submit);
 		mIntroduction = (ToggleButton) findViewById(R.id.detail_introduction);
 
-		final int changedId = getIntent().getIntExtra("id", 0);
-		String changedName = getIntent().getStringExtra("name");
-		String changedSex = getIntent().getStringExtra("sex");
-		String changedAge = getIntent().getStringExtra("age");
-		String changedNumber = getIntent().getStringExtra("number");
+		final int changedId = getIntent().getIntExtra(MainActivity.INFO_ID, 0);
+		String changedName = getIntent().getStringExtra(MainActivity.INFO_NAME);
+		String changedSex = getIntent().getStringExtra(MainActivity.INFO_SEX);
+		String changedAge = getIntent().getStringExtra(MainActivity.INFO_AGE);
+		String changedNumber = getIntent().getStringExtra(MainActivity.INFO_NUMBER);
 
 		mIdTextView.setText(changedId + "");
 		mNameTextView.setText(changedName);
@@ -65,13 +70,13 @@ public class PersonalDetail extends Activity {
 			public void onCheckedChanged(CompoundButton buttonView,
 					boolean isChecked) {
 				if (isChecked) {
-					mIntent.putExtra("com.exercise.info.intro1",
+					mIntent.putExtra(INTRO1,
 							R.raw.introduction);
 					startService(mIntent);
 					isChecked = !isChecked;
 				} else {
 					Intent pauseMusicIntent = new Intent(
-							"com.exercise.info.broadcast.pausemusic");
+							MusicPlayerService.BROADCAST_PAUSEMUSIC);
 					sendBroadcast(pauseMusicIntent);
 				}
 			}
@@ -87,9 +92,9 @@ public class PersonalDetail extends Activity {
 	private void sendNewNumber(String changedId, String newNumber) {
 
 		Intent intent = new Intent();
-		intent.setAction("com.exercise.info.change_number");
-		intent.putExtra("new_number_id", changedId);
-		intent.putExtra("new_number", newNumber);
+		intent.setAction(MainActivity.BROADCAST_CHANGE_NUMEBER);
+		intent.putExtra(NEW_NUMBER_ID, changedId);
+		intent.putExtra(NEW_NUMBER, newNumber);
 		sendBroadcast(intent);
 		Toast.makeText(this, "Send the broadcast!", Toast.LENGTH_LONG).show();
 	}

@@ -1,6 +1,5 @@
 package young.exercise.info;
 
-import android.R.integer;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,13 +11,14 @@ import android.os.IBinder;
 
 public class MusicPlayerService extends Service {
 
+	public static final String BROADCAST_PAUSEMUSIC= "com.exercise.info.broadcast.pausemusic";
 	private MediaPlayer mPlayer;
 	private int mIntroId;
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		
-		mIntroId = intent.getIntExtra("com.exercise.info.intro1", R.raw.introduction);
+		mIntroId = intent.getIntExtra(PersonalDetail.INTRO1, R.raw.introduction);
 		return null;
 	}
 
@@ -26,6 +26,7 @@ public class MusicPlayerService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		mPlayer.release();
+		unregisterReceiver(mPauseReceiver);
 	}
 	
 	
@@ -34,7 +35,7 @@ public class MusicPlayerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		mPlayer = MediaPlayer.create(this, mIntroId);
-		registerReceiver(mPauseReceiver, new IntentFilter("com.exercise.info.broadcast.pausemusic"));
+		registerReceiver(mPauseReceiver, new IntentFilter(BROADCAST_PAUSEMUSIC));
 		
 	}
 	
